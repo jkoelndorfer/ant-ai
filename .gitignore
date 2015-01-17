@@ -1,0 +1,5 @@
+# vim swap files
+*.swp
+
+# python virtual environment
+venv/
