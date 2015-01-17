@@ -41,7 +41,7 @@ class AntAIClient(object):
             'api/game/{0}/turn',
             self.game_id
         )
-        return self.request(url, None, self.METHOD_GET)
+        return self.request(url, None, self._METHOD_GET)
 
     def request(self, url, data, method):
         assert method in (self._METHOD_GET, self._METHOD_POST)
