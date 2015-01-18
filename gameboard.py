@@ -13,6 +13,17 @@ class Gameboard(object):
                 coordinate = Coordinate(row_number, column_number)
                 row.append(Tile(coordinate, self))
 
+    def clear_tile_entities(self):
+        for tile in self.itertiles():
+            tile.set_entity(None)
+
+    def itertiles(self):
+        def generator():
+            for row in self.tiles:
+                for tile in row:
+                    yield tile
+        return generator()
+
     def get_tile(self, coordinate):
         assert isinstance(coordinate, Coordinate)
         return self.tiles[coordinate.x][coordinate.y]
