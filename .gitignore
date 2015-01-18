@@ -3,3 +3,6 @@
 
 # python virtual environment
 venv/
+
+# python cached files
+__pycache__/
