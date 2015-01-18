@@ -29,20 +29,36 @@ class Board(object):
 
     def __init__(self, view_distance):
         self.view_distance = view_distance
+        self.tiles = []
+        for row_number in range(self.height):
+            row = []
+            self.tiles.append(row)
+            for column_number in range(self.width):
+                coordinate = C(row_number, column_number)
+                tile_type = Tile
+                if coordinate in self.walls:
+                    tile_type = Wall
+                row.append(tile_type(coordinate, self))
 
 
 class Tile(object):
     traversable = True
 
-    def __init__(self, coordinate, entity=None):
+    def __init__(self, coordinate, gameboard):
         self.coordinate = coordinate
-        self.entity = entity
+        self.gameboard = gameboard
+        self.entity = None
 
     def is_visible(self):
         raise NotImplementedError()
 
-class Wall(Tile): traversable = False
-class AntHill(Tile): pass
+class Wall(Tile):
+    traversable = False
+
+class AntHill(Tile):
+    def __init__(self, coordinate, owner):
+        super().__init__(coordinate)
+        self.owner = owner
 
 class TileEntity(object):
     def __init__(self, parent_tile):
@@ -50,8 +66,9 @@ class TileEntity(object):
         self.parent_tile = parent_tile
 
 class Ant(TileEntity):
-    def __init__(self, parent_tile, ant_id):
+    def __init__(self, parent_tile, ant_id, owner):
         super().__init__(parent_tile)
         self.ant_id = ant_id
+        self.owner = owner
 
 class Food(TileEntity): pass
