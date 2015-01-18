@@ -42,11 +42,11 @@ class GameTextRenderer(object):
                 char = self.enemy_hill
         elif not gamestate.tile_is_visible(tile):
             char = self.invisible_tile
-        elif isinstance(tile.entity, gameboard.Ant):
+        elif isinstance(tile.get_entity(), gameboard.Ant):
             if gamestate.tile_is_friendly(tile):
                 char = self.friendly_ant
             else:
                 char = self.enemy_ant
-        elif isinstance(tile.entity, gameboard.Food):
+        elif isinstance(tile.get_entity(), gameboard.Food):
             char = self.food
         return char

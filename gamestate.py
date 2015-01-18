@@ -18,9 +18,9 @@ class GameState(object):
 
     def tile_is_friendly(self, tile):
         if tile.type == gb.TileType.ant_hill:
-            return tile.owner == self.friendly_name
-        elif isinstance(tile.entity, gb.Ant):
-            return tile.entity.owner == self.friendly_name
+            return tile.owner == self.friendly_player
+        elif isinstance(tile.get_entity(), gb.Ant):
+            return tile.get_entity().owner == self.friendly_player
         else:
             return False
 

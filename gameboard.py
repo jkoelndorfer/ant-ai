@@ -48,7 +48,7 @@ class Tile(object):
     def __init__(self, coordinate, gameboard):
         self.coordinate = coordinate
         self.gameboard = gameboard
-        self.entity = None
+        self._entity = None
         self.type = TileType.basic
         self.metadata = dict()
 
@@ -59,20 +59,26 @@ class Tile(object):
         self.type = TileType.ant_hill
         self.metadata = {'owner': owner}
 
+    def get_entity(self):
+        return self._entity
+
+    def set_entity(self, entity):
+        assert isinstance(entity, TileEntity)
+        self._entity = entity
+        entity.parent_tile = self
+
     @property
     def traversable(self):
         return self.type != TileType.wall
 
 
 class TileEntity(object):
-    def __init__(self, parent_tile):
-        assert isinstance(parent_tile, Tile)
-        self.parent_tile = parent_tile
+    pass
 
 
 class Ant(TileEntity):
-    def __init__(self, parent_tile, ant_id, owner):
-        super().__init__(parent_tile)
+    def __init__(self, ant_id, owner):
+        super().__init__()
         self.ant_id = ant_id
         self.owner = owner
 
