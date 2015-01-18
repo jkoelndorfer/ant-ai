@@ -63,7 +63,7 @@ class Tile(object):
         return self._entity
 
     def set_entity(self, entity):
-        assert isinstance(entity, TileEntity)
+        assert isinstance(entity, TileEntity) or entity is None
         self._entity = entity
         entity.parent_tile = self
 
