@@ -65,7 +65,8 @@ class Tile(object):
     def set_entity(self, entity):
         assert isinstance(entity, TileEntity) or entity is None
         self._entity = entity
-        entity.parent_tile = self
+        if entity is not None:
+            entity.parent_tile = self
 
     @property
     def traversable(self):
