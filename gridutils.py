@@ -1,3 +1,6 @@
+from gameboard import Coordinate
+
+
 def get_straight_line_coordinates(start, end):
     assert isinstance(start, Coordinate)
     assert isinstance(end, Coordinate)
@@ -24,25 +27,3 @@ def get_straight_line_coordinates(start, end):
             yield Coordinate(**args)
 
     return generator()
-
-class Coordinate(object):
-    def __init__(self, x, y):
-        assert isinstance(x, int)
-        assert isinstance(y, int)
-        super().__setattr__('x', x)
-        super().__setattr__('y', y)
-
-    def __hash__(self):
-        return int(str(self.x) + str(self.y))
-
-    def __eq__(self, other):
-        return (self.x == other.x and self.y == other.y)
-
-    def __repr__(self):
-        return '({0}, {1})'.format(self.x, self.y)
-
-    def __delattr__(self, name):
-        raise TypeError('Instances are immutable.')
-
-    def __setattr__(self, name, value):
-        raise TypeError('Instances are immutable.')

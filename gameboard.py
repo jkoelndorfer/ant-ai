@@ -1,70 +1,74 @@
-from itertools import chain
-
-from gridutils import get_straight_line_coordinates as l
-from gridutils import Coordinate as C
+from enum import Enum
 
 
-class Board(object):
-    width = 30
-    height = 30
-
-    walls = (
-        # Walls at y = 0 and y = 29 (corners, horizontal)
-        l(C(0, 0), C(2, 0)), l(C(27, 0), C(29, 0)),
-        l(C(0, 29), C(2, 29)), l(C(27, 29), C(29, 29)),
-
-        # Walls at x = 0 and x = 29 (corners, vertical)
-        l(C(0, 0), C(0, 2)), l(C(29, 0), C(29, 2)),
-        l(C(0, 27), C(0, 29)), l(C(29, 27), C(29, 29)),
-
-        # Walls at y = 14 and y = 15 (middle "+", horizontal)
-        l(C(10, 14), C(19, 14)), l(C(10, 15), C(19, 15)),
-
-        # Walls at x = 14 and x = 15 (middle "+", vertical)
-        l(C(14, 10), C(14, 19)), l(C(15, 10), C(15, 19))
-    )
-    # The code above produces some nested tuples - let's convert it
-    # to a flat set of Coordinate objects.
-    walls = set(chain.from_iterable(walls))
-
-    def __init__(self, view_distance):
-        self.view_distance = view_distance
+class Gameboard(object):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
         self.tiles = []
         for row_number in range(self.height):
             row = []
             self.tiles.append(row)
             for column_number in range(self.width):
-                coordinate = C(row_number, column_number)
-                tile_type = Tile
-                if coordinate in self.walls:
-                    tile_type = Wall
-                row.append(tile_type(coordinate, self))
+                coordinate = Coordinate(row_number, column_number)
+                row.append(Tile(coordinate, self))
+
+    def get_tile(self, coordinate):
+        assert isinstance(coordinate, Coordinate)
+        return self.tiles[coordinate.x][coordinate.y]
+
+
+class Coordinate(object):
+    def __init__(self, x, y):
+        assert isinstance(x, int)
+        assert isinstance(y, int)
+        super().__setattr__('x', x)
+        super().__setattr__('y', y)
+
+    def __hash__(self):
+        return int(str(self.x) + str(self.y))
+
+    def __eq__(self, other):
+        return (self.x == other.x and self.y == other.y)
+
+    def __repr__(self):
+        return '({0}, {1})'.format(self.x, self.y)
+
+    def __delattr__(self, name):
+        raise TypeError('Instances are immutable.')
+
+    def __setattr__(self, name, value):
+        raise TypeError('Instances are immutable.')
+
+
+TileType = Enum('TileType', ('basic', 'wall', 'ant_hill'))
 
 
 class Tile(object):
-    traversable = True
-
     def __init__(self, coordinate, gameboard):
         self.coordinate = coordinate
         self.gameboard = gameboard
         self.entity = None
+        self.type = TileType.basic
+        self.metadata = dict()
 
-    def is_visible(self):
-        # TODO: Implement this.
-        return True
+    def make_wall(self):
+        self.type = TileType.wall
 
-class Wall(Tile):
-    traversable = False
+    def make_anthill(self, owner):
+        self.type = TileType.ant_hill
+        self.metadata = {'owner': owner}
 
-class AntHill(Tile):
-    def __init__(self, coordinate, owner):
-        super().__init__(coordinate)
-        self.owner = owner
+    @property
+    def traversable(self):
+        return self.type != TileType.wall
+
 
 class TileEntity(object):
     def __init__(self, parent_tile):
         assert isinstance(parent_tile, Tile)
         self.parent_tile = parent_tile
+
 
 class Ant(TileEntity):
     def __init__(self, parent_tile, ant_id, owner):
@@ -72,4 +76,6 @@ class Ant(TileEntity):
         self.ant_id = ant_id
         self.owner = owner
 
-class Food(TileEntity): pass
+
+class Food(TileEntity):
+    pass
