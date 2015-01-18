@@ -50,7 +50,8 @@ class Tile(object):
         self.entity = None
 
     def is_visible(self):
-        raise NotImplementedError()
+        # TODO: Implement this.
+        return True
 
 class Wall(Tile):
     traversable = False
