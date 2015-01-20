@@ -26,4 +26,14 @@ def get_straight_line_coordinates(start, end):
             }
             yield Coordinate(**args)
 
-    return generator()
+def get_filled_circle_coordinates(center, radius):
+    assert isinstance(center, Coordinate)
+    r2 = radius**2
+
+    for x in range(-1 * radius, radius + 1):
+        x2 = x**2
+        for y in range(-1 * radius, radius + 1):
+            y2 = y**2
+            print("Checking {}, {}".format(x, y))
+            if x2 + y2 <= r2:
+                yield Coordinate(x + center.x, y + center.y)
