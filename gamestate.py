@@ -15,6 +15,7 @@ class GameState(object):
         self.view_distance = view_distance
         self.gameboard = gameboard
         self.turn_number = 0
+        self.game_over = False
 
     def tile_is_friendly(self, tile):
         if tile.type == gb.TileType.ant_hill:
