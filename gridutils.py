@@ -18,13 +18,12 @@ def get_straight_line_coordinates(start, end):
     min_change_coord = min(change_coords)
     max_change_coord = max(change_coords)
 
-    def generator():
-        for i in range(min_change_coord, max_change_coord + 1):
-            args = {
-                constant_axis: constant_coord,
-                change_axis: i
-            }
-            yield Coordinate(**args)
+    for i in range(min_change_coord, max_change_coord + 1):
+        args = {
+            constant_axis: constant_coord,
+            change_axis: i
+        }
+        yield Coordinate(**args)
 
 def get_filled_circle_coordinates(center, radius):
     assert isinstance(center, Coordinate)

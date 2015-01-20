@@ -18,11 +18,9 @@ class Gameboard(object):
             tile.set_entity(None)
 
     def itertiles(self):
-        def generator():
-            for row in self.tiles:
-                for tile in row:
-                    yield tile
-        return generator()
+        for row in self.tiles:
+            for tile in row:
+                yield tile
 
     def get_tile(self, coordinate):
         assert isinstance(coordinate, Coordinate)
