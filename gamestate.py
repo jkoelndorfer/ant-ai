@@ -13,18 +13,16 @@ class GameState(object):
         self.friendly_player = friendly_player
         self.enemy_player = enemy_player
         self.view_distance = view_distance
-        self.gameboard = gameboard
         self.turn_number = 0
         self.game_over = False
+        self.set_gameboard(gameboard)
 
-    def tile_is_friendly(self, tile):
-        if tile.type == gb.TileType.ant_hill:
-            return tile.metadata['owner'] == self.friendly_player
-        elif isinstance(tile.get_entity(), gb.Ant):
-            return tile.get_entity().owner == self.friendly_player
-        else:
-            return False
+    def get_gameboard(self):
+        return self._gameboard
 
-    def tile_is_visible(self, tile):
-        # TODO: Implement this.
-        return True
+    def set_gameboard(self, gameboard):
+        self._gameboard = gameboard
+        self._gameboard.gamestate = self
+
+    def is_friendly(self, player):
+        return player == self.friendly_player

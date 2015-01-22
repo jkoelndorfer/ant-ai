@@ -76,7 +76,7 @@ class AntGameController(object):
         self.gamestate.turn_number = game_info['Turn']
 
     def update_gamestate(self, game_info):
-        self.gamestate.gameboard.clear_tile_entities()
+        self.gamestate.get_gameboard().clear_tile_entities()
         info_types = (
             'FriendlyAnts', 'EnemyAnts', 'Walls', 'Hill', 'EnemyHills',
             'VisibleFood'
@@ -89,7 +89,7 @@ class AntGameController(object):
                 objs = (objs, )
             for obj in objs:
                 obj_coordinate = gb.Coordinate(obj['X'], obj['Y'])
-                tile = self.gamestate.gameboard.get_tile(obj_coordinate)
+                tile = self.gamestate.get_gameboard().get_tile(obj_coordinate)
                 if info_name in ('FriendlyAnts', 'EnemyAnts'):
                     tile.set_entity(gb.Ant(ant_id=obj['Id'], owner=obj['Owner']))
                 elif info_name == 'Walls':
@@ -98,7 +98,7 @@ class AntGameController(object):
                     tile.set_entity(gb.Food())
                 elif info_name in ('Hill', 'EnemyHills'):
                     tile.make_anthill(owner=obj['Owner'])
-
+        self.gamestate.get_gameboard().calculate_visible_coordinates()
         self.gamestate.turn_number = game_info['Turn']
         self.gamestate.game_over = game_info['IsGameOver']
 

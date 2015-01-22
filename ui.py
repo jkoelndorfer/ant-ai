@@ -43,17 +43,17 @@ class GameTextRenderer(object):
 
     def render(self, gamestate):
         board = self.top_left_corner + \
-            (self.horizontal_border * gamestate.gameboard.width) + \
+            (self.horizontal_border * gamestate.get_gameboard().width) + \
             self.bottom_left_corner + '\n'
         board += '\n'.join(
             (
                 self.vertical_border +
                 ''.join(self.render_tile(tile, gamestate) for tile in row) +
                 self.vertical_border
-            ) for row in gamestate.gameboard.tiles
+            ) for row in gamestate.get_gameboard().tiles
         )
         board += '\n' + self.bottom_left_corner + \
-            self.horizontal_border * gamestate.gameboard.width + \
+            self.horizontal_border * gamestate.get_gameboard().width + \
             self.bottom_left_corner
         return board
 
@@ -62,14 +62,14 @@ class GameTextRenderer(object):
         if tile.type == gameboard.TileType.wall:
             char = self.wall
         elif tile.type == gameboard.TileType.ant_hill:
-            if gamestate.tile_is_friendly(tile):
+            if gamestate.get_gameboard().tile_is_friendly(tile):
                 char = self.friendly_hill
             else:
                 char = self.enemy_hill
-        elif not gamestate.tile_is_visible(tile):
+        elif not gamestate.get_gameboard().tile_is_visible(tile):
             char = self.invisible_tile
         elif isinstance(tile.get_entity(), gameboard.Ant):
-            if gamestate.tile_is_friendly(tile):
+            if gamestate.get_gameboard().tile_is_friendly(tile):
                 char = self.friendly_ant
             else:
                 char = self.enemy_ant

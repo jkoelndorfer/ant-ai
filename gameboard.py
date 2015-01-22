@@ -1,11 +1,19 @@
 from enum import Enum
 
+from gridutils import Coordinate
+import gridutils
+
 
 class Gameboard(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self.gamestate = None
+        self.friendly_ants = []
+        self.enemy_ants = []
+        self.food = []
         self.tiles = []
+        self.visible_coordinates = set()
         for row_number in range(self.height):
             row = []
             self.tiles.append(row)
@@ -13,9 +21,21 @@ class Gameboard(object):
                 coordinate = Coordinate(row_number, column_number)
                 row.append(Tile(coordinate, self))
 
+    def calculate_visible_coordinates(self):
+        self.visible_coordinates = set()
+        for ant_tile in self.friendly_ants:
+            self.visible_coordinates |= \
+                set(gridutils.get_filled_circle_coordinates(
+                    ant_tile.coordinate, self.gamestate.view_distance,
+                    modulo_x=self.width, modulo_y=self.height
+                ))
+
     def clear_tile_entities(self):
         for tile in self.itertiles():
             tile.set_entity(None)
+        self.friendly_ants = []
+        self.enemy_ants = []
+        self.food = []
 
     def itertiles(self):
         for row in self.tiles:
@@ -26,28 +46,28 @@ class Gameboard(object):
         assert isinstance(coordinate, Coordinate)
         return self.tiles[coordinate.x][coordinate.y]
 
+    def tile_is_friendly(self, tile):
+        if tile.type == TileType.ant_hill:
+            return self.gamestate.is_friendly(tile.metadata['owner'])
+        elif isinstance(tile.get_entity(), Ant):
+            return self.gamestate.is_friendly(tile.get_entity().owner)
+        else:
+            return False
 
-class Coordinate(object):
-    def __init__(self, x, y):
-        assert isinstance(x, int)
-        assert isinstance(y, int)
-        super().__setattr__('x', x)
-        super().__setattr__('y', y)
+    def tile_is_visible(self, tile):
+        return tile.coordinate in self.visible_coordinates
 
-    def __hash__(self):
-        return int(str(self.x) + str(self.y))
-
-    def __eq__(self, other):
-        return (self.x == other.x and self.y == other.y)
-
-    def __repr__(self):
-        return '({0}, {1})'.format(self.x, self.y)
-
-    def __delattr__(self, name):
-        raise TypeError('Instances are immutable.')
-
-    def __setattr__(self, name, value):
-        raise TypeError('Instances are immutable.')
+    def register_entity_tile(self, tile):
+        e = tile.get_entity()
+        l = None
+        if isinstance(e, Ant):
+            if self.tile_is_friendly(tile):
+                l = self.friendly_ants
+            else:
+                l = self.enemy_ants
+        elif isinstance(e, Food):
+            l = self.food
+        l.append(tile)
 
 
 TileType = Enum('TileType', ('basic', 'wall', 'ant_hill'))
@@ -74,6 +94,7 @@ class Tile(object):
     def set_entity(self, entity):
         assert isinstance(entity, TileEntity) or entity is None
         self._entity = entity
+        self.gameboard.register_entity_tile(self)
         if entity is not None:
             entity.parent_tile = self
 
