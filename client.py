@@ -16,10 +16,9 @@ class AntAIClient(object):
     _METHOD_GET = 'get'
     _METHOD_POST = 'post'
 
-    def __init__(self, name, web_service_url, ai):
+    def __init__(self, name, web_service_url):
         self.name = name
         self.web_service_url = web_service_url
-        self.ai = ai
         self.game_id = None
         self.auth_token = None
 
