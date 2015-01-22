@@ -69,7 +69,6 @@ class AntGameController(object):
         self.gamestate = None
 
     def initialize_gamestate(self, game_info):
-        print(game_info)
         self.gamestate = gamestate.GameState(
             friendly_player=self.client.name, enemy_player='?',
             gameboard=gb.Gameboard(game_info['Width'], game_info['Height']),
