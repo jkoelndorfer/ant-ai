@@ -106,8 +106,8 @@ class AntGameController(object):
     def update_gamestate(self, game_info):
         self.gamestate.get_gameboard().clear_tile_entities()
         info_types = (
-            'FriendlyAnts', 'EnemyAnts', 'Walls', 'Hill', 'EnemyHills',
-            'VisibleFood'
+            'VisibleFood', 'FriendlyAnts', 'EnemyAnts', 'Walls', 'Hill',
+            'EnemyHills'
         )
         for info_name in info_types:
             objs = game_info[info_name]
