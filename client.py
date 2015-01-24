@@ -91,7 +91,9 @@ class AntGameController(object):
                 obj_coordinate = gb.Coordinate(obj['X'], obj['Y'])
                 tile = self.gamestate.get_gameboard().get_tile(obj_coordinate)
                 if info_name in ('FriendlyAnts', 'EnemyAnts'):
-                    tile.set_entity(gb.Ant(ant_id=obj['Id'], owner=obj['Owner']))
+                    tile.set_entity(
+                        gb.Ant(ant_id=obj['Id'], owner=obj['Owner'])
+                    )
                 elif info_name == 'Walls':
                     tile.make_wall()
                 elif info_name == 'VisibleFood':
