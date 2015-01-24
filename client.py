@@ -58,7 +58,7 @@ class AntAIClient(object):
         move_list_data = {
             'GameId': self.game_id,
             'AuthToken': self.auth_token,
-            'MoveAntRequests': (move.to_dict() for move in moves)
+            'MoveAntRequests': [move.to_dict() for move in moves]
         }
         self.request(url, move_list_data, self._METHOD_POST)
 
