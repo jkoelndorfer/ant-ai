@@ -59,6 +59,8 @@ class Gameboard(object):
 
     def register_entity_tile(self, tile):
         e = tile.get_entity()
+        if e is None:
+            return
         l = None
         if isinstance(e, Ant):
             if self.tile_is_friendly(tile):
