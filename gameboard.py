@@ -44,7 +44,7 @@ class Gameboard(object):
 
     def get_tile(self, coordinate):
         assert isinstance(coordinate, Coordinate)
-        return self.tiles[coordinate.x][coordinate.y]
+        return self.tiles[coordinate.x % self.width][coordinate.y % self.height]
 
     def tile_is_friendly(self, tile):
         if tile.type == TileType.ant_hill:
