@@ -53,11 +53,39 @@ class AntAIClient(object):
         response = method_func(url, headers=self._HTTP_HEADERS, data=json_data)
         return response.json()
 
+    def submit_move_list(self, moves):
+        url = self._format_url('api/game/update')
+        move_list_data = {
+            'GameId': self.game_id,
+            'AuthToken': self.auth_token,
+            'MoveAntRequests': (move.to_dict() for move in moves)
+        }
+        self.request(url, move_list_data, self._METHOD_POST)
+
     def _format_url(self, path, *url_vars):
         return '/'.join((
             self.web_service_url,
             path.format(*url_vars)
         ))
+
+
+class AntMove(object):
+    UP = 'up'
+    DOWN = 'down'
+    LEFT = 'left'
+    RIGHT = 'right'
+
+    def __init__(self, ant_id, direction):
+        assert isinstance(ant_id, int)
+        assert direction in (self.UP, self.DOWN, self.LEFT, self.RIGHT)
+        self.ant_id = ant_id
+        self.direction = direction
+
+    def to_dict(self):
+        return {
+            'AntId': self.ant_id,
+            'Direction': self.direction
+        }
 
 
 class AntGameController(object):
@@ -119,7 +147,8 @@ class AntGameController(object):
         while not self.gamestate.game_over:
             game_info = self.client.get_game_info()
             self.update_gamestate(game_info)
-            self.ai.execute(self.gamestate)
             if self.renderer:
                 self.renderer.display(self.gamestate)
+            movelist = self.ai.execute(self.gamestate)
+            self.client.submit_move_list(movelist)
             self.sleep_until_next_turn()
