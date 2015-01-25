@@ -34,7 +34,7 @@ class Pathfinder(object):
                     return self.build_path(end, parent_coords)
                 # All traversals have equal cost
                 successor_g = g_score[q] + 1
-                successor_h = self.heuristic_distance(successor, end)
+                successor_h = self.heuristic_cost(successor, end)
                 successor_f = successor_g + successor_h
                 if f_score.get(successor, successor_f + 1) > successor_f:
                     f_score[successor] = successor_f
@@ -54,11 +54,8 @@ class Pathfinder(object):
         return path
 
     @classmethod
-    def heuristic_distance(cls, start, end):
-        # We don't need to take the square root to find the actual distance.
-        # As long as we compare the squares of the distances, our comparisons
-        # will end up the same.
-        return ((start.x - end.x)**2 + (start.y - end.y)**2)
+    def cartesian_distance(cls, start, end):
+        return math.sqrt((start.x - end.x)**2 + (start.y - end.y)**2)
 
     def heuristic_cost(self, start, end):
         """
@@ -78,7 +75,7 @@ class Pathfinder(object):
             else:
                 new_end_y = end.y - self.gameboard.height
         end = C(new_end_x, new_end_y)
-        return self.heuristic_distance(start, end)
+        return self.cartesian_distance(start, end)
 
     def _get_neighboring_coordinates(self, coordinate):
         gt = self.gameboard.get_tile
