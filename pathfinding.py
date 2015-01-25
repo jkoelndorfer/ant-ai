@@ -45,7 +45,6 @@ class Pathfinder(object):
     def build_path(self, end, parent_coords):
         current = end
         path = list()
-        path.append(end)
         while True:
             parent = parent_coords.get(current, None)
             if parent is None:
