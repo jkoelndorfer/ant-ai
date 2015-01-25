@@ -37,9 +37,13 @@ class GameTextRenderer(object):
             if p == 'self':
                 continue
             setattr(self, p, properties[p])
+        self.overlay = lambda tile, gamestate: None
 
     def display(self, gamestate):
         print('\n\n' + self.render(gamestate))
+
+    def register_overlay(self, overlay):
+        self.overlay = overlay
 
     def render(self, gamestate):
         board = self.top_left_corner + \
@@ -58,6 +62,10 @@ class GameTextRenderer(object):
         return board
 
     def render_tile(self, tile, gamestate):
+        char = self.overlay(tile, gamestate)
+        if char is not None:
+            return char
+
         char = self.visible_tile
         if tile.type == gameboard.TileType.wall:
             char = self.wall
