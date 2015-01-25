@@ -28,9 +28,15 @@ class Pathfinder(object):
         new_end_x = end.x
         new_end_y = end.y
         if math.fabs((start.x - end.x)) > (self.gameboard.width / 2):
-            new_end_x = end.x - self.gameboard.width
+            if start.x > end.x:
+                new_end_x = end.x + self.gameboard.width
+            else:
+                new_end_x = end.x - self.gameboard.width
         if math.fabs((start.y - end.y)) > (self.gameboard.height / 2):
-            new_end_y = end.y - self.gameboard.height
+            if start.y > end.y:
+                new_end_y = end.y + self.gameboard.height
+            else:
+                new_end_y = end.y - self.gameboard.height
         end = C(new_end_x, new_end_y)
         return self.distance(start, end)
 
