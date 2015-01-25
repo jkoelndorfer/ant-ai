@@ -45,13 +45,13 @@ class GameTextRenderer(object):
         board = self.top_left_corner + \
             (self.horizontal_border * gamestate.get_gameboard().width) + \
             self.bottom_left_corner + '\n'
-        board += '\n'.join(
-            (
-                self.vertical_border +
-                ''.join(self.render_tile(tile, gamestate) for tile in row) +
-                self.vertical_border
-            ) for row in gamestate.get_gameboard().tiles
-        )
+        for y in range(0, gamestate.get_gameboard().height):
+            board += self.vertical_border
+            for x in range(0, gamestate.get_gameboard().width):
+                board += self.render_tile(
+                    gamestate.get_gameboard().tiles[x][y], gamestate
+                )
+            board += self.vertical_border + '\n'
         board += '\n' + self.bottom_left_corner + \
             self.horizontal_border * gamestate.get_gameboard().width + \
             self.bottom_left_corner
