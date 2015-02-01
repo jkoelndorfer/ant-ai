@@ -13,6 +13,7 @@ class Gameboard(object):
         self.friendly_ants = []
         self.enemy_ant_hill = None
         self.enemy_ants = []
+        self._ants_by_id = dict()
         self.food = []
         self.tiles = []
         self.visible_coordinates = set()
@@ -37,12 +38,16 @@ class Gameboard(object):
             tile.set_entity(None)
         self.friendly_ants = []
         self.enemy_ants = []
+        self._ants_by_id = dict()
         self.food = []
 
     def itertiles(self):
         for row in self.tiles:
             for tile in row:
                 yield tile
+
+    def get_ant(self, ant_id):
+        return self._ants_by_id[ant_id]
 
     def get_tile(self, coordinate):
         assert isinstance(coordinate, Coordinate)
@@ -69,6 +74,7 @@ class Gameboard(object):
                 l = self.friendly_ants
             else:
                 l = self.enemy_ants
+            self._ants_by_id[tile.get_entity().ant_id] = tile
         elif isinstance(e, Food):
             l = self.food
         l.append(tile)
