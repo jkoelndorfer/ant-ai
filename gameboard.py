@@ -94,7 +94,7 @@ class Tile(object):
     def make_wall(self):
         self.type = TileType.wall
 
-    def make_anthill(self, owner):
+    def make_ant_hill(self, owner):
         self.type = TileType.ant_hill
         self.metadata = {'owner': owner}
         self.gameboard.register_ant_hill(self)

@@ -127,7 +127,7 @@ class AntGameController(object):
                 elif info_name == 'VisibleFood':
                     tile.set_entity(gb.Food())
                 elif info_name in ('Hill', 'EnemyHills'):
-                    tile.make_anthill(owner=obj['Owner'])
+                    tile.make_ant_hill(owner=obj['Owner'])
         self.gamestate.get_gameboard().calculate_visible_coordinates()
         self.gamestate.turn_number = game_info['Turn']
         self.gamestate.game_over = game_info['IsGameOver']
