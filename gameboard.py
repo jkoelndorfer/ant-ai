@@ -9,7 +9,9 @@ class Gameboard(object):
         self.width = width
         self.height = height
         self.gamestate = None
+        self.friendly_ant_hill = None
         self.friendly_ants = []
+        self.enemy_ant_hill = None
         self.enemy_ants = []
         self.food = []
         self.tiles = []
@@ -71,6 +73,12 @@ class Gameboard(object):
             l = self.food
         l.append(tile)
 
+    def register_ant_hill(self, tile):
+        if self.tile_is_friendly(tile):
+            self.friendly_ant_hill = tile
+        else:
+            self.enemy_ant_hill = tile
+
 
 TileType = Enum('TileType', ('basic', 'wall', 'ant_hill'))
 
@@ -89,6 +97,7 @@ class Tile(object):
     def make_anthill(self, owner):
         self.type = TileType.ant_hill
         self.metadata = {'owner': owner}
+        self.gameboard.register_ant_hill(self)
 
     def get_entity(self):
         return self._entity
