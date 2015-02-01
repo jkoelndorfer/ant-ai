@@ -11,7 +11,7 @@ class Pathfinder(object):
 
     # Used http://web.mit.edu/eranki/www/tutorials/search as a reference for
     # this A* implementation.
-    def find_path(self, start, end):
+    def find_path(self, start, end, nontraversable=()):
         """
         Given Coordinates start and end, finds the shortest path between them
         on the gameboard.
@@ -32,6 +32,8 @@ class Pathfinder(object):
                 if successor == end:
                     parent_coords[successor] = q
                     return self.build_path(end, parent_coords)
+                if successor in nontraversable:
+                    continue
                 # All traversals have equal cost
                 successor_g = g_score[q] + 1
                 successor_h = self.heuristic_cost(successor, end)
