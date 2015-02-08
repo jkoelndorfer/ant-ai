@@ -59,8 +59,12 @@ class JohnAI(object):
                 prioritized_objectives.qsize() > 0:
             objective = prioritized_objectives.get()
             ant_prioritizer = self.make_ant_prioritizer(objective)
+            use_assigned_ants = False
+            if isinstance(objective, AntHillObjective):
+                use_assigned_ants = True
             squad = self.ant_manager.create_squad(
-                ant_prioritizer, self.objective_needed_ants(objective)
+                ant_prioritizer, self.objective_needed_ants(objective),
+                use_assigned_ants
             )
             self.assign_objective(objective, squad)
         ai_moves = self.calculate_ant_moves()
