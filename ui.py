@@ -56,7 +56,7 @@ class GameTextRenderer(object):
                     gamestate.get_gameboard().tiles[x][y], gamestate
                 )
             board += self.vertical_border + '\n'
-        board += '\n' + self.bottom_left_corner + \
+        board += self.bottom_left_corner + \
             self.horizontal_border * gamestate.get_gameboard().width + \
             self.bottom_left_corner
         return board
