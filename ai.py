@@ -10,6 +10,28 @@ from gridutils import Coordinate as C
 
 _gamestate = None
 
+def surrounding_tiles(tile, radius):
+    for x in range(-1 * radius, radius + 1):
+        for y in range(-1 * radius, radius + 1):
+            if x == 0 and y == 0:
+                continue
+            coordinate = C(tile.coordinate.x + x, tile.coordinate.y + y)
+            yield _gamestate.get_gameboard().get_tile(coordinate)
+
+def nearby_enemy_ants(coordinate, radius):
+    gb = _gamestate.get_gameboard()
+    tile = gb.get_tile(coordinate)
+    enemy_ant_count = 0
+    for nearby_tile in surrounding_tiles(tile, radius):
+        entity = nearby_tile.get_entity()
+        if isinstance(entity, gameboard.Ant) and \
+                not gb.tile_is_friendly(tile):
+            enemy_ant_count += 1
+    return enemy_ant_count
+
+def is_food(tile):
+    return isinstance(tile.get_entity(), gameboard.Food)
+
 
 class JohnAI(object):
     def __init__(self, renderer=None):
@@ -93,46 +115,39 @@ class JohnAI(object):
             self.objective_manager.make_objective(tile)
 
     def objective_priority(self, objective):
-        objective_priority = objective.DEFAULT_PRIORITY
         if isinstance(objective, FoodObjective):
-            objective_priority += self.pathfinder.heuristic_cost(
-                self.gameboard.friendly_ant_hill.coordinate,
-                objective.coordinate
-            ) * 100
-            tile = self.gameboard.get_tile(objective.coordinate)
-            multiplier = 1
-            # Examine the tiles surrounding food. Food that is close to other
-            # food is more important, since we can grab a lot of it quickly.
-            for tile in self.surrounding_tiles(tile, 4):
-                if isinstance(tile.get_entity(), gameboard.Food):
-                    objective_priority -= (100 * multiplier)
-                    multiplier *= 2
+            return self.food_objective_priority(objective)
         elif isinstance(objective, AntHillObjective):
-            objective_priority += 1000
+            return self.ant_hill_objective_priority(objective)
+
+    def food_objective_priority(self, objective):
+        objective_priority = objective.DEFAULT_PRIORITY
+        objective_priority += self.pathfinder.heuristic_cost(
+            self.gameboard.friendly_ant_hill.coordinate,
+            objective.coordinate
+        ) * 100
+        tile = self.gameboard.get_tile(objective.coordinate)
+        multiplier = 1
+        # Examine the tiles surrounding food. Food that is close to other
+        # food is more important, since we can grab a lot of it quickly.
+        for tile in surrounding_tiles(tile, 4):
+            if isinstance(tile.get_entity(), gameboard.Food):
+                objective_priority -= (100 * multiplier)
+                multiplier *= 2
+        return objective_priority
+
+    def ant_hill_objective_priority(self, objective):
+        objective_priority = objective.DEFAULT_PRIORITY
+        objective_priority += 500
+        nearby_enemy_count = nearby_enemy_ants(objective.coordinate, 3)
+        objective_priority += (nearby_enemy_count * 200)
+        if nearby_enemy_count == 0:
+            objective_priority -= 2000
         return objective_priority
 
     def objective_needed_ants(self, objective):
         # TODO: Implement objective_needed_ants().
         return 1
-
-    def surrounding_tiles(self, tile, radius):
-        for x in range(-1 * radius, radius + 1):
-            for y in range(-1 * radius, radius + 1):
-                if x == 0 and y == 0:
-                    continue
-                coordinate = C(tile.coordinate.x + x, tile.coordinate.y + y)
-                yield self.gameboard.get_tile(coordinate)
-
-    def nearby_enemy_ants(self, coordinate):
-        gb = _gamestate.get_gameboard()
-        tile = gb.get_tile(coordinate)
-        enemy_ant_count = 0
-        for nearby_tile in self.surrounding_tiles(tile, 3):
-            entity = nearby_tile.get_entity()
-            if isinstance(entity, gameboard.Ant) and \
-                    not gb.tile_is_friendly(tile):
-                enemy_ant_count += 1
-        return enemy_ant_count
 
     def calculate_ant_moves(self):
         gameboard = _gamestate.get_gameboard()
@@ -355,22 +370,47 @@ class AntSquad(object):
         moves = []
         self.logger.info(str(self.objective))
         for ant_id in self.members:
-            ant = gameboard.get_ant(ant_id)
-            path = pathfinder.find_path(
-                ant.coordinate, self.objective.coordinate, nontraversable
-            )
-            move = AIMove(ant_id, path[0])
-            move.path = path
-            self.logger.debug(
-                'Moving ant %d %s -> %s (%s)', ant_id, str(move.frm),
-                str(move.to), str(move.direction)
-            )
-            # Update the list of coordinates we aren't allowed to move to
-            # We don't want to be killing our own ants!
-            nontraversable.remove(move.frm)
-            nontraversable.add(move.to)
-            moves.append(move)
+            move = self.ant_move(ant_id, gameboard, pathfinder, nontraversable)
+            if move is not None:
+                moves.append(move)
         return moves
+
+    def ant_move(self, ant_id, gameboard, pathfinder, nontraversable):
+        ant = gameboard.get_ant(ant_id)
+        max_food_dist = 3
+        nearby_food = filter(is_food, surrounding_tiles(ant, max_food_dist))
+        targets = filter(
+            lambda x: x.coordinate not in nontraversable,
+            itertools.chain(nearby_food, (self.objective ,))
+        )
+        # If the actual distance to our food is too far away, check the next
+        # potential target.
+        while True:
+            try:
+                target = next(targets)
+            except StopIteration:
+                return None
+            path = pathfinder.find_path(
+                ant.coordinate, target.coordinate, nontraversable
+            )
+            if path is None:
+                continue
+            if (target.coordinate == self.objective.coordinate or
+                    len(path) < max_food_dist):
+                break
+        if path is None:
+            return None
+        move = AIMove(ant_id, path[0])
+        move.path = path
+        self.logger.debug(
+            'Moving ant %d %s -> %s (%s)', ant_id, str(move.frm),
+            str(move.to), str(move.direction)
+        )
+        # Update the list of coordinates we aren't allowed to move to
+        # We don't want to be killing our own ants!
+        nontraversable.remove(move.frm)
+        nontraversable.add(move.to)
+        return move
 
 
 @functools.total_ordering
@@ -410,23 +450,6 @@ class Objective(object):
         True if an objective is no longer present, else False.
         """
         raise NotImplementedError()
-
-
-class ScoutObjective(Objective):
-    def __init__(self, objective_id, coordinate):
-        super().__init__(objective_id)
-
-    @property
-    def coordinate(self):
-        return _gamestate.get_ant(self.ant_id).coordinate
-
-    @property
-    def obsolete(self):
-        gameboard = _gamestate.get_gameboard()
-        return (
-            self.coordinate in gameboard.visible_coordinates() or
-            not gameboard.get_tile().traversable
-        )
 
 
 class FoodObjective(Objective):
