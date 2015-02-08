@@ -19,14 +19,14 @@ class AntRunApp(object):
             dest='web_service_url',
             default='http://antsgame.azurewebsites.net',
             help=('The web endpoint to use when connecting to the game. '
-                  'Defaults to %default.'),
+                  'Defaults to %(default)s.'),
         )
         a.add_argument(
             '--agent-name',
             dest='agent_name',
             default='JohnK',
             help=('When connecting, the name that will be used to identify '
-                  'this client to the server. Defaults to %default.')
+                  'this client to the server. Defaults to %(default)s.')
         )
         a.add_argument(
             '--game-id',
@@ -40,7 +40,7 @@ class AntRunApp(object):
             dest='log_level',
             default='error',
             help=('Log messages greater or equal to this level will be '
-                  'displayed. Defaults to %default.'),
+                  'displayed. Defaults to %(default)s.'),
             choices=('debug', 'info', 'warning', 'error', 'critical')
         )
         a.add_argument(
