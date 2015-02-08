@@ -108,9 +108,11 @@ class AntGameController(object):
             view_distance=game_info['FogOfWar']
         )
         self.gamestate.turn_number = game_info['Turn']
+        self.gamestate.total_food = game_info['TotalFood']
 
     def update_gamestate(self, game_info):
         self.gamestate.get_gameboard().clear_tile_entities()
+        self.gamestate.total_food = game_info['TotalFood']
         info_types = (
             'FriendlyAnts', 'EnemyAnts', 'VisibleFood', 'Walls', 'Hill',
             'EnemyHills'

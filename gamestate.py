@@ -14,6 +14,7 @@ class GameState(object):
         self.enemy_player = enemy_player
         self.view_distance = view_distance
         self.turn_number = 0
+        self.total_food = 0
         self.game_over = False
         self.set_gameboard(gameboard)
 
