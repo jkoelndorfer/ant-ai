@@ -59,6 +59,8 @@ class GameTextRenderer(object):
         board += self.bottom_left_corner + \
             self.horizontal_border * gamestate.get_gameboard().width + \
             self.bottom_left_corner
+        if gamestate.game_over:
+            board += '\n' + 'GAME OVER'
         return board
 
     def render_tile(self, tile, gamestate):
