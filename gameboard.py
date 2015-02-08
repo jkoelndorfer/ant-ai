@@ -113,10 +113,6 @@ class Tile(object):
 
     def set_entity(self, entity):
         assert isinstance(entity, TileEntity) or entity is None
-        self.logger.debug(
-            'Setting entity on %s to %s', str(self.coordinate),
-            entity.__class__.__name__
-        )
         self._entity = entity
         self.gameboard.register_entity_tile(self)
         if entity is not None:
