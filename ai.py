@@ -12,10 +12,11 @@ _gamestate = None
 
 
 class JohnAI(object):
-    def __init__(self):
+    def __init__(self, renderer=None):
         self.logger = logging.getLogger('ants.ai.JohnAI')
         self.ant_manager = AntManager()
         self.objective_manager = ObjectiveManager()
+        self.renderer = renderer
 
     def initialize(self, gamestate):
         global _gamestate
@@ -145,7 +146,20 @@ class JohnAI(object):
                 self.gameboard, self.pathfinder, nontraversable_coordinates
             )
             moves.extend(squad_moves)
+        if self.renderer is not None:
+            self.renderer.register_overlay(
+                self.renderer_path_overlay([x.path for x in moves])
+            )
         return moves
+
+    def renderer_path_overlay(self, paths):
+        path_chars = 'ov+=&!?%'
+        def overlay(tile, gamestate):
+            for index, path in enumerate(paths):
+                if tile.coordinate in path:
+                    return path_chars[index % len(path_chars)]
+            return None
+        return overlay
 
 
 
@@ -154,6 +168,7 @@ class AIMove(object):
         self.ant_id = ant_id
         self.to = to
         self.logger = logging.getLogger('ants.ai.AIMove')
+        self.path = ()
 
     @property
     def frm(self):
@@ -345,6 +360,7 @@ class AntSquad(object):
                 ant.coordinate, self.objective.coordinate, nontraversable
             )
             move = AIMove(ant_id, path[0])
+            move.path = path
             self.logger.debug(
                 'Moving ant %d %s -> %s (%s)', ant_id, str(move.frm),
                 str(move.to), str(move.direction)
