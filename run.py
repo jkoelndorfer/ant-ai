@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
 import sys
 
 import ai
@@ -55,6 +56,10 @@ class AntRunApp(object):
 
     def run(self, argv):
         args = self.argparser.parse_args(argv)
+        log_level = getattr(logging, args.log_level.upper())
+        logger = logging.getLogger('ants')
+        logging.basicConfig()
+        logger.setLevel(log_level)
         gameclient = client.AntAIClient(args.agent_name, args.web_service_url)
         renderer = None
         if args.render_gameboard:
