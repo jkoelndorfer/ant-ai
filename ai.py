@@ -169,8 +169,8 @@ class AIMove(object):
         direction_map = {
             gb.get_tile(C(self.frm.x - 1, self.frm.y)).coordinate: AntMove.LEFT,
             gb.get_tile(C(self.frm.x + 1, self.frm.y)).coordinate: AntMove.RIGHT,
-            gb.get_tile(C(self.frm.x, self.frm.y - 1)).coordinate: AntMove.DOWN,
-            gb.get_tile(C(self.frm.x, self.frm.y + 1)).coordinate: AntMove.UP,
+            gb.get_tile(C(self.frm.x, self.frm.y - 1)).coordinate: AntMove.UP,
+            gb.get_tile(C(self.frm.x, self.frm.y + 1)).coordinate: AntMove.DOWN,
         }
         direction = direction_map[self.to]
         self.logger.debug('Direction is %s', direction)
