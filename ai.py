@@ -260,7 +260,11 @@ class AntManager(object):
             if ant_current_squad is not None:
                 ant_current_squad.remove_members((ant_id, ))
             self.ant_squad_assignments[ant_id] = squad
-            self.unassigned_ants.remove(ant_id)
+            try:
+                self.unassigned_ants.remove(ant_id)
+            except KeyError:
+                # Expected if use_assigned_ants = True
+                pass
         squad.add_members(squad_members)
         self.logger.debug('Created squad %d', squad.squad_id)
         return squad
