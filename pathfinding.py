@@ -1,28 +1,15 @@
 import functools
+import logging
 import math
 from queue import PriorityQueue
 
-from client import AntMove
 from gameboard import Coordinate as C
 
 
 class Pathfinder(object):
     def __init__(self, gameboard):
         self.gameboard = gameboard
-
-    def move_towards(self, start, end, nontraversable=()):
-        try:
-            next_coord = self.find_path(start, end, nontraversable)[0]
-        except IndexError:
-            # There is no path from start to end
-            return None
-        adjacent_coords = {
-            C(start.x - 1, start.y): AntMove.LEFT,
-            C(start.x + 1, start.y): AntMove.RIGHT,
-            C(start.x, start.y - 1): AntMove.DOWN,
-            C(start.x, start.y + 1): AntMove.UP
-        }
-        return adjacent_coords[next_coord]
+        self.logger = logging.getLogger('ants.pathfinding.Pathfinder')
 
     # Used http://web.mit.edu/eranki/www/tutorials/search as a reference for
     # this A* implementation.

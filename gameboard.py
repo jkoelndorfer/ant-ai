@@ -1,4 +1,5 @@
 from enum import Enum
+import logging
 
 from gridutils import Coordinate
 import gridutils
@@ -17,6 +18,7 @@ class Gameboard(object):
         self.food = []
         self.tiles = []
         self.visible_coordinates = set()
+        self.logger = logging.getLogger('ants.gameboard.Gameboard')
         for row_number in range(self.height):
             row = []
             self.tiles.append(row)
@@ -96,6 +98,7 @@ class Tile(object):
         self._entity = None
         self.type = TileType.basic
         self.metadata = dict()
+        self.logger = logging.getLogger('ants.gameboard.Tile')
 
     def make_wall(self):
         self.type = TileType.wall
@@ -110,6 +113,10 @@ class Tile(object):
 
     def set_entity(self, entity):
         assert isinstance(entity, TileEntity) or entity is None
+        self.logger.debug(
+            'Setting entity on %s to %s', str(self.coordinate),
+            entity.__class__.__name__
+        )
         self._entity = entity
         self.gameboard.register_entity_tile(self)
         if entity is not None:
@@ -121,7 +128,8 @@ class Tile(object):
 
 
 class TileEntity(object):
-    pass
+    def __init__(self):
+        self.logger = logging.getLogger('ants.gameboard.TileEntity')
 
 
 class Ant(TileEntity):

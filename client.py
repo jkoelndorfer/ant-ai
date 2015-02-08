@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 import json
 import requests
 import time
@@ -21,6 +22,7 @@ class AntAIClient(object):
         self.web_service_url = web_service_url
         self.game_id = None
         self.auth_token = None
+        self.logger = logging.getLogger('ants.client.AntAIClient')
 
     def login(self, game_id=None):
         login_data = {
@@ -37,14 +39,18 @@ class AntAIClient(object):
             'api/game/{0}/status/{1}',
             self.game_id, self.auth_token
         )
-        return self.request(url, None, self._METHOD_POST)
+        json = self.request(url, None, self._METHOD_POST)
+        self.logger.debug(json)
+        return json
 
     def get_turn_info(self):
         url = self._format_url(
             'api/game/{0}/turn',
             self.game_id
         )
-        return self.request(url, None, self._METHOD_GET)
+        json = self.request(url, None, self._METHOD_GET)
+        self.logger.debug(json)
+        return json
 
     def request(self, url, data, method):
         assert method in (self._METHOD_GET, self._METHOD_POST)
@@ -106,9 +112,10 @@ class AntGameController(object):
     def update_gamestate(self, game_info):
         self.gamestate.get_gameboard().clear_tile_entities()
         info_types = (
-            'VisibleFood', 'FriendlyAnts', 'EnemyAnts', 'Walls', 'Hill',
+            'FriendlyAnts', 'EnemyAnts', 'VisibleFood', 'Walls', 'Hill',
             'EnemyHills'
         )
+        entity_types = ('FriendlyAnts', 'EnemyAnts', 'VisibleFood')
         for info_name in info_types:
             objs = game_info[info_name]
             # Our hill is the only information we want that isn't iterable,
@@ -118,6 +125,9 @@ class AntGameController(object):
             for obj in objs:
                 obj_coordinate = gb.Coordinate(obj['X'], obj['Y'])
                 tile = self.gamestate.get_gameboard().get_tile(obj_coordinate)
+                if tile.get_entity() is not None and info_name in entity_types:
+                    # The server has a bug where there can be multiple entities
+                    continue
                 if info_name in ('FriendlyAnts', 'EnemyAnts'):
                     tile.set_entity(
                         gb.Ant(ant_id=obj['Id'], owner=obj['Owner'])
@@ -144,6 +154,8 @@ class AntGameController(object):
     def start(self):
         game_info = self.client.get_game_info()
         self.initialize_gamestate(game_info)
+        self.ai.initialize(self.gamestate)
+        self.sleep_until_next_turn()
         while not self.gamestate.game_over:
             game_info = self.client.get_game_info()
             self.update_gamestate(game_info)
