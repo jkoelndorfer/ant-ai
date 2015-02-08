@@ -99,7 +99,8 @@ class JohnAI(object):
         Updates the objectives known to the ObjectiveManager.
         """
         potential_objectives = itertools.chain(
-            self.gameboard.food, (self.gameboard.enemy_ant_hill, )
+            self.gameboard.food, (self.gameboard.friendly_ant_hill,
+            self.gameboard.enemy_ant_hill)
         )
         current_objective_coordinates = set()
         objectives_to_remove = []
@@ -123,6 +124,8 @@ class JohnAI(object):
             return self.food_objective_priority(objective)
         elif isinstance(objective, AntHillObjective):
             return self.ant_hill_objective_priority(objective)
+        elif isinstance(objective, DefendObjective):
+            return self.defend_objective_priority(objective)
 
     def food_objective_priority(self, objective):
         objective_priority = objective.DEFAULT_PRIORITY
@@ -148,6 +151,31 @@ class JohnAI(object):
         if nearby_enemy_count == 0:
             objective_priority -= 2000
         return objective_priority
+
+    def defend_objective_priority(self, objective):
+        desired_defenders = self.desired_defenders()
+        current_defenders = self.gamestate.total_food
+        ant_hill = self.gameboard.friendly_ant_hill
+        if isinstance(ant_hill.get_entity(), gameboard.Ant):
+            current_defenders += 1
+        self.logger.debug('Current defenders %d', current_defenders)
+        self.logger.debug('Desired defenders %d', desired_defenders)
+        defense_priority = objective.DEFAULT_PRIORITY ** 2
+        if current_defenders <= desired_defenders:
+            defense_priority = 0
+        self.logger.debug('Defense priority %d', defense_priority)
+        return defense_priority
+
+    def desired_defenders(self):
+        friendly_ant_count = len(self.gameboard.friendly_ants)
+        num_defenders = 0
+        if friendly_ant_count <= 5:
+            num_defenders = 1
+        elif 5 < friendly_ant_count <= 10:
+            num_defenders = 3
+        else:
+            num_defenders = 5
+        return num_defenders
 
     def objective_needed_ants(self, objective):
         # TODO: Implement objective_needed_ants().
@@ -324,7 +352,10 @@ class ObjectiveManager(object):
         entity = tile.get_entity()
         objective_id = self._objective_id()
         if tile.type == gameboard.TileType.ant_hill:
-            o = AntHillObjective(objective_id, tile.coordinate)
+            if _gamestate.get_gameboard().tile_is_friendly(tile):
+                o = DefendObjective(objective_id)
+            else:
+                o = AntHillObjective(objective_id, tile.coordinate)
         elif isinstance(entity, gameboard.Food):
             o = FoodObjective(objective_id, tile.coordinate)
         else:
@@ -481,3 +512,21 @@ class AntHillObjective(Objective):
     @property
     def obsolete(self):
         return False
+
+
+class DefendObjective(Objective):
+    def __init__(self, objective_id):
+        super().__init__(objective_id)
+
+    @property
+    def coordinate(self):
+        return _gamestate.get_gameboard().friendly_ant_hill.coordinate
+
+    # As soon as an ant moves off the hill standing on the hill again will be
+    # impossible as long as there are ants queued up.
+    #
+    # Rather than deal with shuffling objectives around, we'll let the
+    # DefendObjective get disposed and recreated every turn.
+    @property
+    def obsolete(self):
+        return True
