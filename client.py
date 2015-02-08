@@ -156,11 +156,15 @@ class AntGameController(object):
         self.initialize_gamestate(game_info)
         self.ai.initialize(self.gamestate)
         self.sleep_until_next_turn()
-        while not self.gamestate.game_over:
+        while True:
             game_info = self.client.get_game_info()
             self.update_gamestate(game_info)
+            if self.gamestate.game_over:
+                break
+            movelist = self.ai.execute(self.gamestate)
             if self.renderer:
                 self.renderer.display(self.gamestate)
-            movelist = self.ai.execute(self.gamestate)
             self.client.submit_move_list(movelist)
             self.sleep_until_next_turn()
+        if self.renderer:
+            self.renderer.display(self.gamestate)
