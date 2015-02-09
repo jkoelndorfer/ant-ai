@@ -1,1 +1,4 @@
 This agent requires Python 3 to run. See requirements.txt for configuration of the virtual environment.
+
+To run the agent, execute run.py. If desired, you can pass options to configure the web service URL,
+agent name, game ID, and log level. Execute `./run.py -h` to see detailed help.
